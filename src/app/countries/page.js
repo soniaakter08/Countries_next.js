@@ -2,7 +2,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCountries } from "@/lib/features/countries/countriesSlice";
 import { useEffect } from "react";
-import "./page.css";
 
 const Countries = () => {
   const dispatch = useDispatch();
@@ -17,36 +16,25 @@ const Countries = () => {
 
   return (
     <>
-      <div className="countries-page">
-        <h1 className="page-title">Countries</h1>
-        <ul className="country-list">
-          {countries.map((country) => (
-            <li key={country.name.common} className="country-card">
-              <img
-                src={country.flags.png}
-                alt={country.flags.alt || country.name.common}
-                className="country-flag"
-              />
-              <h2 className="country-name">{country.name.common}</h2>
-              <p className="country-pop">
-                Population:{" "}
-                <span className="pop-number">
-                  {country.population.toLocaleString()}
-                </span>
-              </p>
-              <p className="country-currency">
-                Currency:{" "}
-                <span>
-                  {
-                    Object.values(country.currencies)[0]
-                      ?.name /* e.g. "Jamaican dollar" */
-                  }{" "}
-                  ({Object.values(country.currencies)[0]?.symbol /* e.g. "$" */}
-                  )
-                </span>
-              </p>
-            </li>
-          ))}
+      <div>
+        <h1>Countries</h1>
+        <ul>
+          {countries.map((country) => {
+            const currency = Object.values(country.currencies)[0]; // get first currency
+            return (
+              <li key={country.name.common}>
+                <img
+                  src={country.flags.png}
+                  alt={country.name.common}
+                  width={30}
+                  style={{ marginRight: "8px" }}
+                />
+                <strong>{country.name.common}</strong> — Population:{" "}
+                {country.population.toLocaleString()} — Currency:{" "}
+                {currency?.name} ({currency?.symbol})
+              </li>
+            );
+          })}
         </ul>
       </div>
     </>
