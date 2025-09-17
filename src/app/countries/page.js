@@ -2,6 +2,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCountries } from "@/lib/features/countries/countriesSlice";
 import { useEffect } from "react";
+import { CardContent, Grid, Typography, Card } from "@mui/material";
 
 const Countries = () => {
   const dispatch = useDispatch();
@@ -12,31 +13,30 @@ const Countries = () => {
 
   useEffect(() => {
     dispatch(fetchCountries());
-  }, []);
+  }, [dispatch]);
+
+  const getCurrencies = (country) => {
+    if (!country.currencies) return NaN;
+    return Object.values(country.currencies)
+      .map((currency) => `${currency.name} (${currency.symbol})`)
+      .join(",");
+  };
 
   return (
     <>
-      <div>
-        <h1>Countries</h1>
-        <ul>
-          {countries.map((country) => {
-            const currency = Object.values(country.currencies)[0]; // get first currency
-            return (
-              <li key={country.name.common}>
-                <img
-                  src={country.flags.png}
-                  alt={country.name.common}
-                  width={30}
-                  style={{ marginRight: "8px" }}
-                />
-                <strong>{country.name.common}</strong> — Population:{" "}
-                {country.population.toLocaleString()} — Currency:{" "}
-                {currency?.name} ({currency?.symbol})
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      <h1>Countries</h1>
+      <Grid container spacing={3}>
+        {countries.map((country) => (
+          <Card key={country.name.common}>
+            <CardContent>
+              <img src={country.flags.svg} alt="flag" width={100} height={50} />
+              <Typography variant="h5">{country.name.common}</Typography>
+              <Typography variant="h6"> {country.population} </Typography>
+              <Typography variant="h6">{getCurrencies(country)}</Typography>
+            </CardContent>
+          </Card>
+        ))}
+      </Grid>
     </>
   );
 };
