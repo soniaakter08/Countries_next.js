@@ -5,5 +5,6 @@ export async function GET(request) {
   if (error) {
     console.log(error);
   }
-  return new Response(`${data}`, { status: 200 });
+  console.log("Data:", data);
+  return new Response(JSON.stringify(data), { status: 200 });
 }
