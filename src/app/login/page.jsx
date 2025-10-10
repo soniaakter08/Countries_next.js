@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import { supabase } from "@/lib/supabase/supabase";
 import { Box, Paper, Typography } from "@mui/material";
 import { Auth } from "@supabase/auth-ui-react";
@@ -7,13 +8,14 @@ import { useAuth } from "../context/AuthContext";
 import AuthRedirect from "./AuthRedirect";
 
 const Login = () => {
-    const {user} =useAuth();
+
+    const {user} = useAuth();
+
     if(user){
-        return<AuthRedirect/>;
-    }
-    else{
+        return <AuthRedirect/>
+    } else {
+
         
-    
         return (
             <Box
             sx={{
@@ -56,7 +58,7 @@ const Login = () => {
             </Box>
         );
     }
-};  
+};
 
 export default Login;
  

@@ -1,13 +1,13 @@
-'use client';
-import { Children, useRef } from 'react';
-import { Provider } from 'react-redux';
-import { makeStore} from '@/lib/store';
+"use client"
+import { useRef } from "react";
+import { Provider } from "react-redux";
+import { makeStore } from "@/lib/store"; // @ - it means its redirect to src folder
 
-export default function StoreProvider({children}){
+export default function StoreProvider({children}) {
     const storeRef = useRef(null);
     if(!storeRef.current){
-        storeRef.current =makeStore();
-
+        storeRef.current = makeStore();
     }
-    return <Provider store={storeRef.current}>{children}</Provider>
+
+    return <Provider store = {storeRef.current}>{children}</Provider>;
 }
