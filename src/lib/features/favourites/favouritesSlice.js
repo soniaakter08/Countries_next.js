@@ -48,7 +48,7 @@ export const addFavourite = createAsyncThunk(
         .from("favourites")
         .insert({
           user_id: session.user.id,
-          country_name: countryData.name, // field name in the database country_name
+          country_name: countryData.name.common, // field name in the database country_name
           country_data: countryData, // field name in the database country_data
         })
         .select()
