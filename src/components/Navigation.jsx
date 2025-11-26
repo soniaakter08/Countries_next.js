@@ -1,22 +1,38 @@
 "use client";
 
 import { useAuth } from "@/app/context/AuthContext";
-import { AppBar, Button, Toolbar } from "@mui/material";
+import { AppBar, Button, Toolbar, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 import FavouriteCountriesButton from "@/components/FavouriteCountriesButton.jsx";
+import HomeIcon from "@mui/icons-material/Home";
+import { useEffect, useState } from "react";
 
 const Navigation = ({ children }) => {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering after client mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <div>
-      <AppBar position="static" color="gradient" sx={{ mb: 3 }}>
+      <AppBar position="static" color="primary" sx={{ mb: 3 }}>
         <Toolbar>
+          {/* Home Icon */}
+          <IconButton color="inherit" onClick={() => router.push("/")}>
+            <HomeIcon />
+          </IconButton>
+
           <Button color="inherit" onClick={() => router.push("/countries")}>
             Countries
           </Button>
+
           <FavouriteCountriesButton />
           <Button color="inherit" onClick={() => router.push("/example")}>
             Example
@@ -26,15 +42,14 @@ const Navigation = ({ children }) => {
           </Button>
 
           {user && (
-            <div>
-              
+            <>
               <Button color="inherit" onClick={() => router.push("/profile")}>
                 Profile
               </Button>
               <Button color="inherit" onClick={() => signOut()}>
                 Logout
               </Button>
-            </div>
+            </>
           )}
 
           {!user && (
@@ -46,6 +61,7 @@ const Navigation = ({ children }) => {
           <ThemeToggle />
         </Toolbar>
       </AppBar>
+
       {children}
     </div>
   );

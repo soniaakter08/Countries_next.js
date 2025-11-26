@@ -6,7 +6,7 @@ export default function FavouriteCountriesButton() {
   return (
     <Link href="/favourites" style={{ textDecoration: "none" }}>
       <Button
-        variant="contained"
+      
         color="inherit"
         startIcon={<FavoriteIcon />}
       >

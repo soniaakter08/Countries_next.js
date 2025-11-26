@@ -1,4 +1,5 @@
 "use client";
+
 import { useAuth } from "@/app/context/AuthContext";
 import FavouriteButton from "@/components/FavouriteButton";
 import {
@@ -24,7 +25,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-// import CapitalMap from "@/components/CapitalMap";
+import CapitalMap from "@/components/CapitalMap";
 
 const CountryPage = () => {
   const { slug } = useParams();
@@ -46,65 +47,55 @@ const CountryPage = () => {
 
     try {
       const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHERAPI;
-      const response = await fetch(
+      const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
           capital
         )}&appid=${API_KEY}&units=metric`
       );
-      if (!response.ok) throw new Error("Weather data not available");
-      const data = await response.json();
+      if (!res.ok) throw new Error("Weather data not available");
+      const data = await res.json();
       setWeatherData(data);
     } catch (err) {
       setWeatherError(err.message);
-      console.error("Weather fetch error:", err);
     } finally {
       setWeatherLoading(false);
     }
   };
 
+  // Fetch countries and favourites
   useEffect(() => {
-    if (countries.length === 0) {
-      dispatch(fetchCountries());
-    }
+    if (countries.length === 0) dispatch(fetchCountries());
     dispatch(fetchFavourites());
   }, [countries.length, dispatch]);
 
+  // Fetch weather for selected country
   useEffect(() => {
     if (selectedCountry?.capital?.[0]) {
       fetchWeatherData(selectedCountry.capital[0]);
     }
   }, [selectedCountry]);
 
+  // Select country based on slug
   useEffect(() => {
     if (slug && countries.length > 0) {
-      const countryName = decodeURIComponent(slug.replace(/-/g, " "));
-      const foundCountry = countries.find(
-        (country) =>
-          country.name.common.toLowerCase() === countryName.toLowerCase() ||
-          country.name.official.toLowerCase() === countryName.toLowerCase()
+      const name = decodeURIComponent(slug.replace(/-/g, " "));
+      const country = countries.find(
+        (c) =>
+          c.name.common.toLowerCase() === name.toLowerCase() ||
+          c.name.official.toLowerCase() === name.toLowerCase()
       );
-
-      if (foundCountry) dispatch(setSelectedCountry(foundCountry));
+      if (country) dispatch(setSelectedCountry(country));
       else dispatch(clearSelectedCountry());
     }
-
-    return () => {
-      dispatch(clearSelectedCountry());
-    };
+    return () => dispatch(clearSelectedCountry());
   }, [slug, countries, dispatch]);
 
-  const handleBack = () => {
-    router.push("/countries");
-  };
+  const handleBack = () => router.push("/countries");
 
-  const getLanguages = (country) => {
-    if (!country.languages) return "N/A";
-    return Object.values(country.languages).join(", ");
-  };
+  const getLanguages = (country) =>
+    country.languages ? Object.values(country.languages).join(", ") : "N/A";
 
-  const formatPopulation = (population) => {
-    return new Intl.NumberFormat().format(population);
-  };
+  const formatPopulation = (pop) => new Intl.NumberFormat().format(pop);
 
   const getBorderCountries = (borderCodes) => {
     if (!borderCodes || borderCodes.length === 0) return ["None"];
@@ -114,7 +105,7 @@ const CountryPage = () => {
     });
   };
 
-  if (loading || countries.length === 0) {
+  if (loading || countries.length === 0)
     return (
       <Box
         display="flex"
@@ -125,9 +116,8 @@ const CountryPage = () => {
         <Typography variant="h6">Loading countries data...</Typography>
       </Box>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <Box
         display="flex"
@@ -149,9 +139,8 @@ const CountryPage = () => {
         </Button>
       </Box>
     );
-  }
 
-  if (!selectedCountry) {
+  if (!selectedCountry)
     return (
       <Box
         display="flex"
@@ -171,7 +160,6 @@ const CountryPage = () => {
         </Button>
       </Box>
     );
-  }
 
   return (
     <Box
@@ -184,7 +172,7 @@ const CountryPage = () => {
         gap: 2,
       }}
     >
-      {/* Top buttons: Back + My Favourite Countries */}
+      {/* Top Buttons */}
       <Box
         sx={{
           display: "flex",
@@ -200,7 +188,6 @@ const CountryPage = () => {
         >
           Back to Countries
         </Button>
-
         {user && (
           <Button
             variant="outlined"
@@ -213,7 +200,7 @@ const CountryPage = () => {
         )}
       </Box>
 
-      {/* Favourite toggle button for this country aligned left */}
+      {/* Favourite Button */}
       {user && (
         <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
           <FavouriteButton country={selectedCountry} />
@@ -222,7 +209,7 @@ const CountryPage = () => {
 
       <Paper elevation={3} sx={{ p: 4 }}>
         <Grid container spacing={4}>
-          {/* Row 1: Flag & Details */}
+          {/* Flag & Details */}
           <Grid item xs={12} md={6}>
             <Card sx={{ height: "100%" }}>
               <CardContent>
@@ -262,46 +249,36 @@ const CountryPage = () => {
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Box display="flex" flexDirection="column" gap={2}>
-                  <Box>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      Population
-                    </Typography>
-                    <Typography variant="body2">
-                      {formatPopulation(selectedCountry.population)}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      Capital
-                    </Typography>
-                    <Typography variant="body2">
-                      {selectedCountry.capital?.join(", ") || "N/A"}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      Languages
-                    </Typography>
-                    <Box sx={{ mt: 1 }}>
-                      {getLanguages(selectedCountry)
-                        .split(", ")
-                        .map((language, index) => (
-                          <Chip
-                            key={index}
-                            label={language}
-                            variant="outlined"
-                            size="small"
-                            sx={{ mr: 1, mb: 1 }}
-                          />
-                        ))}
-                    </Box>
+                  <Typography>
+                    <strong>Population:</strong>{" "}
+                    {formatPopulation(selectedCountry.population)}
+                  </Typography>
+                  <Typography>
+                    <strong>Capital:</strong>{" "}
+                    {selectedCountry.capital?.join(", ") || "N/A"}
+                  </Typography>
+                  <Typography>
+                    <strong>Languages:</strong>
+                  </Typography>
+                  <Box sx={{ mt: 1 }}>
+                    {getLanguages(selectedCountry)
+                      .split(", ")
+                      .map((lang, i) => (
+                        <Chip
+                          key={i}
+                          label={lang}
+                          variant="outlined"
+                          size="small"
+                          sx={{ mr: 1, mb: 1 }}
+                        />
+                      ))}
                   </Box>
                 </Box>
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Row 2: Weather & Borders */}
+          {/* Weather */}
           <Grid item xs={12} md={6}>
             <Card sx={{ height: "100%", width: 200 }}>
               <CardContent>
@@ -309,29 +286,10 @@ const CountryPage = () => {
                   Weather in {selectedCountry.capital?.[0]}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-
-                {weatherLoading && (
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    minHeight="200px"
-                  >
-                    <Typography>Loading weather data...</Typography>
-                  </Box>
-                )}
-
+                {weatherLoading && <Typography>Loading weather...</Typography>}
                 {weatherError && (
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    minHeight="200px"
-                  >
-                    <Typography color="error">{weatherError}</Typography>
-                  </Box>
+                  <Typography color="error">{weatherError}</Typography>
                 )}
-
                 {weatherData && !weatherLoading && (
                   <Box
                     display="flex"
@@ -350,28 +308,25 @@ const CountryPage = () => {
                         <Typography variant="h5">
                           {Math.round(weatherData.main.temp)}°C
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2">
                           {weatherData.weather[0].main}
                         </Typography>
                       </Box>
                     </Box>
-                    <Box display="flex" flexDirection="column" gap={1}>
-                      <Typography variant="body2">
-                        Humidity: {weatherData.main.humidity}%
-                      </Typography>
-                      <Typography variant="body2">
-                        Wind: {weatherData.wind.speed} m/s
-                      </Typography>
-                      <Typography variant="body2">
-                        Feels like: {Math.round(weatherData.main.feels_like)}°C
-                      </Typography>
-                    </Box>
+                    <Typography>
+                      Humidity: {weatherData.main.humidity}%
+                    </Typography>
+                    <Typography>Wind: {weatherData.wind.speed} m/s</Typography>
+                    <Typography>
+                      Feels like: {Math.round(weatherData.main.feels_like)}°C
+                    </Typography>
                   </Box>
                 )}
               </CardContent>
             </Card>
           </Grid>
 
+          {/* Border Countries */}
           <Grid item xs={12} md={6}>
             <Card sx={{ height: "100%", maxWidth: 300 }}>
               <CardContent>
@@ -381,13 +336,12 @@ const CountryPage = () => {
                 <Divider sx={{ mb: 2 }} />
                 <Box display="flex" flexWrap="wrap" gap={1}>
                   {getBorderCountries(selectedCountry.borders).map(
-                    (border, index) => (
+                    (border, i) => (
                       <Chip
-                        key={index}
+                        key={i}
                         label={border}
                         variant="outlined"
                         size="small"
-                        sx={{ mr: 1, mb: 1 }}
                       />
                     )
                   )}
@@ -397,15 +351,13 @@ const CountryPage = () => {
           </Grid>
         </Grid>
 
-        {/* Map */}
+        {/* Capital Map */}
         {selectedCountry?.capitalInfo?.latlng && (
-          <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-            <Box sx={{ minWidth: 500, width: "100%", maxWidth: 1200 }}>
-              <CapitalMap
-                capital={selectedCountry.capital[0]}
-                latlng={selectedCountry.capitalInfo.latlng}
-              />
-            </Box>
+          <Box sx={{ mt: 4 }}>
+            <CapitalMap
+              capital={selectedCountry.capital[0]}
+              latlng={selectedCountry.capitalInfo.latlng}
+            />
           </Box>
         )}
       </Paper>
